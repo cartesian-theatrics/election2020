@@ -8,31 +8,20 @@ from plotly.subplots import make_subplots
 
 
 def plot_state(state_data):
-    xs, ys, colors, text = [], [], [], []
-    idx = 0
+    trump, biden, other, dates = [], [], [], []
     for data_point in state_data['timeseries']:
         vote_shares = data_point['vote_shares']
         date = parser.parse(data_point['timestamp'])
-        xs.extend([date, date, date])
-        idx += 3
-        ys.extend([vote_shares['trumpd'], vote_shares['bidenj'],
-                   1 - (vote_shares['trumpd'] + vote_shares['bidenj'])])
-        colors.extend([1, 2, 3])
-        text.extend(["Trump", "Biden", "Other"])
-    return go.Scatter(x=xs,
-                      y=ys,
-                      mode='markers',
-                      text=text,
-                      marker=dict(
-                          color=colors,
-                          colorscale='Viridis',
-                          line_width=1))
+        trump.append(vote_shares['trumpd'])
+        biden.append(vote_shares['bidenj'])
+        other.append(1 - (vote_shares['trumpd'] + vote_shares['bidenj']))
+        dates.append(date)
+    return [go.Scatter(x=dates, y=trump, mode='markers', name="Trump", marker_color='red'),
+            go.Scatter(x=dates, y=biden, mode='markers', name="Biden", marker_color='blue'),
+            go.Scatter(x=dates, y=other, mode='markers', name="Other", marker_color='gold')]
 
 
 def plot_all_states(election_data):
-    """
-    :param election_data:
-    """
     fig = make_subplots(rows=len(election_data),
                         cols=1,
                         subplot_titles=list(election_data.keys()))
@@ -40,8 +29,8 @@ def plot_all_states(election_data):
     for i, (state, state_results) in enumerate(all_results.items()):
         assert len(state_results['data']['races']) == 1
         race = state_results['data']['races'][0]
-        fig_data = plot_state(race)
-        fig.add_trace(fig_data, row=i+1, col=1)
+        for fig_data in plot_state(race):
+            fig.add_trace(fig_data, row=i+1, col=1)
 
     fig.update_layout(showlegend=False,
                       title_text="Election Plot",
