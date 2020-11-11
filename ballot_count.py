@@ -1,7 +1,6 @@
 import os
 import pickle
 
-import pandas as pd
 import plotly.graph_objects as go
 import requests
 from dateutil import parser
